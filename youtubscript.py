@@ -1,38 +1,21 @@
-import os
-from googleapiclient.discovery import build
+import googleapiclient.discovery
 
-# Set up the API client
-API_KEY = 'YOUR_API_KEY'
-YOUTUBE_API_SERVICE_NAME = 'youtube'
-YOUTUBE_API_VERSION = 'v3'
-youtube = build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION, developerKey=API_KEY)
-
-def get_transcript(video_id):
-    request = youtube.captions().list(
-        part="snippet",
-        videoId=video_id
-    )
+def get_transcript(api_key, video_id):
+    youtube = googleapiclient.discovery.build('youtube', 'v3', developerKey=api_key)
+    
+    # Solicitarea directă pentru a obține transcriptul
+    request = youtube.captions().download(id=video_id)
     response = request.execute()
     
-    if not response['items']:
-        return None
+    return response
 
-    # Here, we're selecting the first available caption track.
-    # You might want to iterate over 'items' and select based on the 'language' attribute.
-    caption_id = response['items'][0]['id']
-    
-    # Download the transcript
-    caption_request = youtube.captions().download(
-        id=caption_id
-    )
-    caption_response = caption_request.execute()
-    
-    return caption_response.decode('utf-8')
-
-video_id = "YOUR_VIDEO_ID"
-transcript = get_transcript(video_id)
+api_key = 'AIzaSyASniereNkEnzvJ3m64es4qKEYTsyDHr2Q'
+video_id = '52nqjrCs57s'
+transcript = get_transcript(api_key, video_id)
 if transcript:
-    print(transcript)
+    with open(f'{video_id}_transcript.txt', 'w', encoding='utf-8') as file:
+        file.write(transcript)
+    print(f"Transcriptul a fost salvat ca {video_id}_transcript.txt.")
 else:
-    print("No transcript available for this video.")
+    print("Nu există un transcript disponibil pentru acest videoclip.")
 
